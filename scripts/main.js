@@ -1,49 +1,108 @@
 `use strict`;
 
+const cubePosition = [
+  1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0,
+  0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+];
+const up = [0,1,0];
+
 const vs = `#version 300 es
     in vec3 a_position;
     in float a_textureCordinate;
     
-    // create sampler
-    
     uniform mat4 u_wvProjectionMatrix;
 
-    function main(){
-        vec4 gl_Position = multiply viewMatrix *vec4(a_position, 1.0);
-        // generate sampled data
+    void main(){
+        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
+       
     }
 `;
 
-const fs =  `fragment shader`;
+const fs = `#version 300 es
+        precision highp float;
 
-function init(){
+        out vec4 outColor;
 
-    const canvas = document.querySelector("#main-canvas");
-    let gl = canvas.getContext("webgl2");
-    if(!gl){
-        console.log("webgl2 not found");
-        return;
+        void main(){
+            outColor = vec4(0.5, 0.8, 1.0, 0.6);
+        }
 
-    }
-    // create a program
-    let program = webglUtils.createProgramFromSources(gl, [vs, fs]);
-    // find position of all the attribute;
-    let vertexLocation = webglUtils.getAttributeLocation(program, "a_position");
-    let wvProjectionMatrixLocation = webglUtils.getUniformLocation(program, "u_wvProjectionMatrix") 
+`;
 
-    // create a vertex array to store the state of the program
-    let vao = gl.createVertexArray();
+(function () {
+  const canvas = document.querySelector("#main-canvas");
+  let gl = canvas.getContext("webgl2");
+  if (!gl) {
+    console.log("webgl2 not found");
+    return;
+  }
+
+  let program = webglUtils.createProgramFromSources(gl, [vs, fs]);
+  let positionLocation = gl.getAttribLocation(program, "a_position");
+  let viewProjectionLocation = gl.getUniformLocation(
+    program,
+    "u_wvProjectionMatrix"
+  );
+
+  let vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+
+  let positionBufferr = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(cubePosition),
+    gl.STATIC_DRAW
+  );
+  gl.enableVertexAttribArray(positionLocation);
+  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+  function degToRadian(deg) {
+    return (Math.PI / 180) * deg;
+  }
+
+  function radToDegree(rad) {
+    return (180 / Math.PI) * rad;
+  }
+
+  function initialCameraSetup(cameraPosition, up){
+       let cameraMatrix = m4.lookAt(cameraPosition, [1, 0, 0], up);
+        return cameraMatrix;
+  }
+  
+
+    let cameraRadian = degToRadian(0);
+    let cameraMatrix = m4.yRotation(cameraRadian);
+    cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
+    let viewMatrix = m4.inverse(cameraMatrix)
+
+    cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+    cameraPosition = [0.5, 1.5, -0.5];
+    viewMatrix = initialCameraSetup(cameraPosition, up);
+    
+
+  function drawScene() {
+
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    gl.clearColor(0.5, 0.5, 0.5, 0.5);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+
+    gl.useProgram(program);
     gl.bindVertexArray(vao);
+        
+    let aspect = gl.canvas.clientWidth  / gl.canvas.clientHeight;
+    let fieldofView = degToRadian(60);
+    let projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
+    
+    let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+    gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length/3);
+  }
 
-    // change the state and input the value of the attributes with Vertex Buffer Object
-
-    // calculate and input the uniform value - other than needed in draw scene/updating uniforms
-
-    // call a function drawscene
-
-    // call drawScene in loop
-
-    // call the draw calls
-}
-
-init()
+  drawScene()
+})();
