@@ -3,8 +3,9 @@
 "use strict";
 
 var cubePosition = [1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0];
-var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    // create sampler\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    function main(){\n        vec4 gl_Position = multiply viewMatrix *vec4(a_position, 1.0);\n       \n    }\n";
-var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 outColor;\n\n        void main(){\n            outColor = vec3(0.5, 0.8, 1.0, 1.0);\n        }\n\n";
+var up = [0, 1, 0];
+var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    void main(){\n        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);\n       \n    }\n";
+var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 outColor;\n\n        void main(){\n            outColor = vec4(0.0, 0.8, 0.0, 0.8);\n        }\n\n";
 
 (function () {
   var canvas = document.querySelector("#main-canvas");
@@ -13,23 +14,18 @@ var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 ou
   if (!gl) {
     console.log("webgl2 not found");
     return;
-  } // create a program
+  }
 
-
-  var program = webglUtils.createProgramFromSources(gl, [vs, fs]); // find position of all the attribute;
-
-  var positionLocation = webglUtils.getAttributeLocation(program, "a_position");
-  var wvProjectionMatrixLocation = webglUtils.getUniformLocation(program, "u_wvProjectionMatrix"); // create a vertex array to store the state of the program
-
+  var program = webglUtils.createProgramFromSources(gl, [vs, fs]);
+  var positionLocation = gl.getAttribLocation(program, "a_position");
+  var viewProjectionLocation = gl.getUniformLocation(program, "u_wvProjectionMatrix");
   var vao = gl.createVertexArray();
-  gl.bindVertexArray(vao); // change the state and input the value of the attributes with Vertex Buffer Object
-
+  gl.bindVertexArray(vao);
   var positionBufferr = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubePosition), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 3, 0, false, 0, 0); // calculate and input the uniform value - other than needed in draw scene/updating uniforms
-  // create a utility function
+  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
   function degToRadian(deg) {
     return Math.PI / 180 * deg;
@@ -37,20 +33,39 @@ var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 ou
 
   function radToDegree(rad) {
     return 180 / Math.PI * rad;
-  } // call a function drawscene
-  // call drawScene in loop
-  // call the draw calls
-
-
-  function drawScene() {//handle resized canvas
-    // set view port
-    // clear color, color buffer and depth buffer
-    //enable cullface, depth test and blending
-    // specify the active program and VAO
-    //update the camera position if needed in the shader
-    // since there might be changed aspect, calculate the perspective matrix
-    // update the  world view matrix
-    // call draw call to draw array
   }
+
+  function initialCameraSetup(cameraPosition, up) {
+    var cameraMatrix = m4.lookAt(cameraPosition, [1, 0, 0], up);
+    return cameraMatrix;
+  }
+
+  var cameraRadian = degToRadian(0);
+  var cameraMatrix = m4.yRotation(cameraRadian);
+  cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
+  cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+  cameraPosition = [0.5, -1.0, 1.5];
+  cameraMatrix = initialCameraSetup(cameraPosition, up);
+  viewMatrix = m4.inverse(cameraMatrix);
+
+  function drawScene() {
+    webglUtils.resizeCanvasToDisplaySize(gl.canvas);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clearColor(0.5, 0.5, 0.5, 0.5);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.CULL_FACE);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.BLEND);
+    gl.useProgram(program);
+    gl.bindVertexArray(vao);
+    var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+    var fieldofView = degToRadian(60);
+    var projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
+    var vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+    gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
+  }
+
+  drawScene();
 })();
 //# sourceMappingURL=main.dev.js.map

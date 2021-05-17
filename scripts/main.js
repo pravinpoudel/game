@@ -4,7 +4,7 @@ const cubePosition = [
   1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0,
   0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,
 ];
-const up = [0,1,0];
+const up = [0, 1, 0];
 
 const vs = `#version 300 es
     in vec3 a_position;
@@ -24,7 +24,7 @@ const fs = `#version 300 es
         out vec4 outColor;
 
         void main(){
-            outColor = vec4(0.5, 0.8, 1.0, 0.6);
+            outColor = vec4(0.0, 0.8, 0.0, 0.8);
         }
 
 `;
@@ -65,24 +65,21 @@ const fs = `#version 300 es
     return (180 / Math.PI) * rad;
   }
 
-  function initialCameraSetup(cameraPosition, up){
-       let cameraMatrix = m4.lookAt(cameraPosition, [1, 0, 0], up);
-        return cameraMatrix;
+  function initialCameraSetup(cameraPosition, up) {
+    let cameraMatrix = m4.lookAt(cameraPosition, [1, 0, 0], up);
+    return cameraMatrix;
   }
-  
 
-    let cameraRadian = degToRadian(0);
-    let cameraMatrix = m4.yRotation(cameraRadian);
-    cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
-    let viewMatrix = m4.inverse(cameraMatrix)
+  let cameraRadian = degToRadian(0);
+  let cameraMatrix = m4.yRotation(cameraRadian);
+  cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
 
-    cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-    cameraPosition = [0.5, 1.5, -0.5];
-    viewMatrix = initialCameraSetup(cameraPosition, up);
-    
+  cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+  cameraPosition = [0.5, -1.0, 1.5];
+  cameraMatrix = initialCameraSetup(cameraPosition, up);
+  viewMatrix = m4.inverse(cameraMatrix);
 
   function drawScene() {
-
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -94,15 +91,15 @@ const fs = `#version 300 es
 
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-        
-    let aspect = gl.canvas.clientWidth  / gl.canvas.clientHeight;
+
+    let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     let fieldofView = degToRadian(60);
     let projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
-    
+
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length/3);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
   }
 
-  drawScene()
+  drawScene();
 })();
