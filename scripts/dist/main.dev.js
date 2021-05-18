@@ -4,8 +4,8 @@
 
 var cubePosition = [1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0];
 var up = [0, 1, 0];
-var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    void main(){\n        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);\n       \n    }\n";
-var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 outColor;\n\n        void main(){\n            outColor = vec4(0.0, 0.8, 0.0, 0.8);\n        }\n\n";
+var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    out vec4 fragmentColor;\n\n    void main(){\n        gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);\n        fragmentColor = gl_Position;   \n    }\n";
+var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 fragmentColor;\n\n        out vec4 outColor;\n\n        void main(){\n            outColor = fragmentColor;\n        }\n\n";
 
 (function () {
   var canvas = document.querySelector("#main-canvas");
@@ -40,13 +40,7 @@ var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 ou
     return cameraMatrix;
   }
 
-  var cameraRadian = degToRadian(0);
-  var cameraMatrix = m4.yRotation(cameraRadian);
-  cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
-  cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-  cameraPosition = [0.5, -1.0, 1.5];
-  cameraMatrix = initialCameraSetup(cameraPosition, up);
-  viewMatrix = m4.inverse(cameraMatrix);
+  var cameraDegree = 0;
 
   function drawScene() {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
@@ -58,6 +52,13 @@ var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 ou
     gl.enable(gl.BLEND);
     gl.useProgram(program);
     gl.bindVertexArray(vao);
+    var cameraRadian = degToRadian(cameraDegree);
+    var cameraMatrix = m4.yRotation(cameraRadian);
+    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
+    cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]]; // cameraPosition = [0.5, 2.0, 1.5];
+
+    cameraMatrix = initialCameraSetup(cameraPosition, up);
+    viewMatrix = m4.inverse(cameraMatrix);
     var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     var fieldofView = degToRadian(60);
     var projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
@@ -66,6 +67,10 @@ var fs = "#version 300 es\n        precision highp float;\n\n        out vec4 ou
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
   }
 
+  setInterval(function () {
+    cameraDegree++;
+    drawScene();
+  }, 200);
   drawScene();
 })();
 //# sourceMappingURL=main.dev.js.map

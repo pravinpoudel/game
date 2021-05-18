@@ -12,19 +12,23 @@ const vs = `#version 300 es
     
     uniform mat4 u_wvProjectionMatrix;
 
+    out vec4 fragmentColor;
+
     void main(){
-        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
-       
+        gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);
+        fragmentColor = gl_Position;   
     }
 `;
 
 const fs = `#version 300 es
         precision highp float;
 
+        in vec4 fragmentColor;
+
         out vec4 outColor;
 
         void main(){
-            outColor = vec4(0.0, 0.8, 0.0, 0.8);
+            outColor = fragmentColor;
         }
 
 `;
@@ -70,14 +74,7 @@ const fs = `#version 300 es
     return cameraMatrix;
   }
 
-  let cameraRadian = degToRadian(0);
-  let cameraMatrix = m4.yRotation(cameraRadian);
-  cameraMatrix = m4.translate(cameraMatrix, 0.5, 0.5, 1.5);
-
-  cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-  cameraPosition = [0.5, -1.0, 1.5];
-  cameraMatrix = initialCameraSetup(cameraPosition, up);
-  viewMatrix = m4.inverse(cameraMatrix);
+  let cameraDegree = 0;
 
   function drawScene() {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
@@ -92,6 +89,15 @@ const fs = `#version 300 es
     gl.useProgram(program);
     gl.bindVertexArray(vao);
 
+    let cameraRadian = degToRadian(cameraDegree);
+    let cameraMatrix = m4.yRotation(cameraRadian);
+    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
+
+    cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+    // cameraPosition = [0.5, 2.0, 1.5];
+    cameraMatrix = initialCameraSetup(cameraPosition, up);
+    viewMatrix = m4.inverse(cameraMatrix);
+
     let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     let fieldofView = degToRadian(60);
     let projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
@@ -100,6 +106,11 @@ const fs = `#version 300 es
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
   }
+
+  setInterval(() => {
+    cameraDegree++;
+    drawScene();
+  }, 200);
 
   drawScene();
 })();

@@ -7,8 +7,17 @@ body {
   box-sizing: border-box;
 }
 
-#main-canvas {
-  width: 100vw;
+.canvas-container {
+  display: flex;
   height: 100vh;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
+  /* vertical-align: center; */
+}
+
+#main-canvas {
+  width: 720px;
+  height: 360px;
   display: block;
 }
