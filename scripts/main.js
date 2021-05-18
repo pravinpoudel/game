@@ -51,6 +51,8 @@ const fs = `#version 300 es
   let vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
 
+  const sphere = sphereVertIndices();
+
   let positionBufferr = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
   gl.bufferData(
@@ -76,8 +78,8 @@ const fs = `#version 300 es
 
   let cameraDegree = 0;
 
+
   function drawScene() {
-    console.log("drawScene")
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -106,7 +108,7 @@ const fs = `#version 300 es
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
-    window.requestAnimationFrame(drawScene);
+    // window.requestAnimationFrame(drawScene);
   }
 
   requestAnimationFrame(drawScene)
