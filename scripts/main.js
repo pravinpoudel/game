@@ -77,6 +77,7 @@ const fs = `#version 300 es
   let cameraDegree = 0;
 
   function drawScene() {
+    console.log("drawScene")
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -88,7 +89,7 @@ const fs = `#version 300 es
 
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-
+    cameraDegree+= 0.4;
     let cameraRadian = degToRadian(cameraDegree);
     let cameraMatrix = m4.yRotation(cameraRadian);
     cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
@@ -105,12 +106,8 @@ const fs = `#version 300 es
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
+    window.requestAnimationFrame(drawScene);
   }
 
-  setInterval(() => {
-    cameraDegree++;
-    drawScene();
-  }, 200);
-
-  drawScene();
+  requestAnimationFrame(drawScene)
 })();

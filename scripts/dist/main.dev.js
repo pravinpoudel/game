@@ -52,6 +52,7 @@ var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 fra
     gl.enable(gl.BLEND);
     gl.useProgram(program);
     gl.bindVertexArray(vao);
+    cameraDegree += 5;
     var cameraRadian = degToRadian(cameraDegree);
     var cameraMatrix = m4.yRotation(cameraRadian);
     cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
@@ -67,10 +68,6 @@ var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 fra
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
   }
 
-  setInterval(function () {
-    cameraDegree++;
-    drawScene();
-  }, 200);
-  drawScene();
+  requestAnimationFrame(drawScene);
 })();
 //# sourceMappingURL=main.dev.js.map
