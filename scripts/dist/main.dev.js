@@ -12,8 +12,8 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 var cubePosition = [1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0];
 var up = [0, 1, 0];
-var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    out vec4 fragmentColor;\n\n    void main(){\n        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);\n        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);\n \n        fragmentColor = gl_Position;   \n    }\n";
-var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 fragmentColor;\n\n        out vec4 outColor;\n\n        void main(){\n            // outColor = fragmentColor;\n            outColor = vec4(1.0, 0.0, 0.5, 1.0);\n        }\n\n";
+var vs = "#version 300 es\n    in vec3 a_position;\n    in float a_textureCordinate;\n    \n    uniform mat4 u_wvProjectionMatrix;\n\n    out vec4 vertexCordinate;\n\n    void main(){\n        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);\n        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);\n \n        vertexCordinate = gl_Position;   \n    }\n";
+var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 vertexCordinate;\n        uniform sampler2D u_image;\n\n        out vec4 outColor;\n\n        void main(){\n            // outColor = fragmentColor;\n            float textureSampled = texture2D(u_image, vertexCordinate);\n            outColor = textureSampled;\n            // outColor = vec4(1.0, 0.0, 0.5, 1.0);\n        }\n\n";
 
 (function () {
   var canvas = document.querySelector("#main-canvas");
@@ -35,10 +35,12 @@ var fs = "#version 300 es\n        precision highp float;\n\n        in vec4 fra
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
   gl.bufferData(gl.ARRAY_BUFFER, new Uint16Array(_toConsumableArray(sphere[0])), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0); // let ballTexture = gl.createTexture();
-  // gl.bindTexture(gl.TEXTURE_2D, ballTexture);
-  // gl.textImage2D(gl.TEXTURE_2D, 0, gl.RGBA);
-  // put color as a texture at first
+  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+  var ballImage = new Image();
+  ballImage.crossOrigin = "";
+  ballImage.src = "http://localhost/images/texture/ball.jpg";
+  var ballTexture = gl.createTexture();
+  gl.textImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, ballImage); // put color as a texture at first
   // load an image as a texture
   // revolve an object around x axis
 

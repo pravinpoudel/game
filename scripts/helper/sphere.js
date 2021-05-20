@@ -1,5 +1,5 @@
-const numbLatitude = 50;
-const numbLongitude = 50;
+const numbLatitude = 100;
+const numbLongitude = 100;
 const radius = 0.5;
 const vertices = [];
 const indices = [];
@@ -26,13 +26,14 @@ function sphereVertIndices() {
     }
   }
 
-  console.log(`index1 is ${index}`);
+  console.log(`index count1 is ${index}`);
 
   index = 0;
-  for (let i = 0, x = vertices.length; i <= numbLatitude; i++) {
-    for (let j = 0; j <= numbLongitude; j++) {
-      let p0 = i * (numbLongitude + 1) + j; //remember not j+1;
-      let p1 = p0 + numbLongitude + 1; //dont forget to add 1;
+  let p0, p1, i, j;
+  for (i = 0; i <= numbLatitude-2; i++) {
+    for (j = 0; j <= numbLongitude; j++) {
+      p0 = i * (numbLongitude + 1) + j; //remember not j+1;
+      p1 = p0 + numbLongitude + 1; //dont forget to add 1;
       indices[index++] = p0;
 
       indices[index++] = p1;
@@ -43,6 +44,19 @@ function sphereVertIndices() {
       indices[index++] = p0 + 1;
     }
   }
-  console.log(`index2 is ${index}`);
+
+  for(j=0; j<numbLongitude; j++){
+    
+    p0 = i * (numbLongitude +1) + j;
+    p1 = p0 + numbLongitude + 1;
+    indices[index++] = p0;
+
+    indices[index++] = p1;
+    indices[index++] = p0 + 1;  
+  }
+
+  console.log(p0,p1)
+
+  console.log(`index count2 is ${index}`)
   return [vertices, indices];
 }
