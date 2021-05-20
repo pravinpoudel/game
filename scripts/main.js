@@ -15,7 +15,9 @@ const vs = `#version 300 es
     out vec4 fragmentColor;
 
     void main(){
-        gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);
+        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);
+        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
+ 
         fragmentColor = gl_Position;   
     }
 `;
@@ -28,7 +30,8 @@ const fs = `#version 300 es
         out vec4 outColor;
 
         void main(){
-            outColor = fragmentColor;
+            // outColor = fragmentColor;
+            outColor = vec4(1.0, 0.0, 0.5, 1.0);
         }
 
 `;
@@ -40,6 +43,8 @@ const fs = `#version 300 es
     console.log("webgl2 not found");
     return;
   }
+
+  var ext = gl.getExtension("OES_element_index_uint");
 
   let program = webglUtils.createProgramFromSources(gl, [vs, fs]);
   let positionLocation = gl.getAttribLocation(program, "a_position");
@@ -57,11 +62,19 @@ const fs = `#version 300 es
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
   gl.bufferData(
     gl.ARRAY_BUFFER,
-    new Float32Array(cubePosition),
+    new Uint16Array([...sphere[0]]),
     gl.STATIC_DRAW
   );
   gl.enableVertexAttribArray(positionLocation);
   gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+  // let ballTexture = gl.createTexture();
+  // gl.bindTexture(gl.TEXTURE_2D, ballTexture);
+  // gl.textImage2D(gl.TEXTURE_2D, 0, gl.RGBA);
+  // put color as a texture at first
+  // load an image as a texture
+
+  // revolve an object around x axis
 
   function degToRadian(deg) {
     return (Math.PI / 180) * deg;
@@ -78,7 +91,6 @@ const fs = `#version 300 es
 
   let cameraDegree = 0;
 
-
   function drawScene() {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -91,7 +103,7 @@ const fs = `#version 300 es
 
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-    cameraDegree+= 0.4;
+    cameraDegree += 0.4;
     let cameraRadian = degToRadian(cameraDegree);
     let cameraMatrix = m4.yRotation(cameraRadian);
     cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
@@ -105,11 +117,19 @@ const fs = `#version 300 es
     let fieldofView = degToRadian(60);
     let projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
 
+    let indicesBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
+    gl.bufferData(
+      gl.ELEMENT_ARRAY_BUFFER,
+      new Uint32Array([...sphere[1]]),
+      gl.STATIC_DRAW
+    );
+
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, cubePosition.length / 3);
-    // window.requestAnimationFrame(drawScene);
+    gl.drawElements(gl.TRIANGLES, sphere[1].length, gl.UNSIGNED_INT, 0);
+    window.requestAnimationFrame(drawScene);
   }
 
-  requestAnimationFrame(drawScene)
+  requestAnimationFrame(drawScene);
 })();
