@@ -1,12 +1,12 @@
 const numbLatitude = 100;
 const numbLongitude = 100;
-const radius = 0.5;
+const radius = 0.50;
 const vertices = [];
 const indices = [];
 
 function sphereVertIndices() {
   let index = 0;
-
+  let u, v;
   for (let i = 0; i <= numbLatitude; i++) {
     theta = (i * Math.PI) / numbLatitude;
     let sintheta = Math.sin(theta);
@@ -30,7 +30,7 @@ function sphereVertIndices() {
 
   index = 0;
   let p0, p1, i, j;
-  for (i = 0; i <= numbLatitude-2; i++) {
+  for (i = 0; i <= numbLatitude - 2; i++) {
     for (j = 0; j <= numbLongitude; j++) {
       p0 = i * (numbLongitude + 1) + j; //remember not j+1;
       p1 = p0 + numbLongitude + 1; //dont forget to add 1;
@@ -45,18 +45,17 @@ function sphereVertIndices() {
     }
   }
 
-  for(j=0; j<numbLongitude; j++){
-    
-    p0 = i * (numbLongitude +1) + j;
+  for (j = 0; j < numbLongitude; j++) {
+    p0 = i * (numbLongitude + 1) + j;
     p1 = p0 + numbLongitude + 1;
     indices[index++] = p0;
 
     indices[index++] = p1;
-    indices[index++] = p0 + 1;  
+    indices[index++] = p0 + 1;
   }
 
-  console.log(p0,p1)
+  console.log(p0, p1);
 
-  console.log(`index count2 is ${index}`)
+  console.log(`index count2 is ${index}`);
   return [vertices, indices];
 }

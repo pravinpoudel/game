@@ -10,31 +10,40 @@ const vs = `#version 300 es
     in vec3 a_position;
     in float a_textureCordinate;
     
+    uniform mat4 u_ModelMatrix;
     uniform mat4 u_wvProjectionMatrix;
 
     out vec3 vertexCordinate;
 
     void main(){
-        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);
-        gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
- 
+        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);  
+        gl_Position =  u_wvProjectionMatrix* u_ModelMatrix* vec4(a_position, 1.0);
+        //gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
         vertexCordinate = a_position;   
     }
 `;
 
 const fs = `#version 300 es
 
+    #define M_PI 3.1415926535897932384626433832795
+
     precision mediump float;
 
     in vec3 vertexCordinate;
     uniform sampler2D u_sphereText;
 
-    out vec4 outColor1;
+    out vec4 outColor;
 
     void main(){
-         outColor1 = texture(u_sphereText, vec2(vertexCordinate));
-        //  outColor1 = vec4(1.0, 0.0, 0.5, 1.0);
-        }
+     
+        //  generation of UV cordinate
+        vec3 vertDirection = normalize(vertexCordinate - vec3(0.0, 0.0, 0.0));
+        float u = atan(vertDirection.x, vertDirection.z)/(2.0*M_PI) + 0.5;
+        float v = 0.5-vertDirection.y ;
+    
+        outColor = texture(u_sphereText, vec2(u,v));
+        // outColor = vec4(1.0, 0.8,  0.0, 1.0);
+    }
 
 `;
 
@@ -54,6 +63,7 @@ const fs = `#version 300 es
     program,
     "u_wvProjectionMatrix"
   );
+  let modelMatrixLocation = gl.getUniformLocation(program, "u_ModelMatrix");
 
   let vao = gl.createVertexArray();
   gl.bindVertexArray(vao);
@@ -71,7 +81,6 @@ const fs = `#version 300 es
   gl.enableVertexAttribArray(positionLocation);
   gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
-
   let ballTexture = gl.createTexture();
   gl.activeTexture(gl.TEXTURE1);
   gl.bindTexture(gl.TEXTURE_2D, ballTexture);
@@ -84,21 +93,37 @@ const fs = `#version 300 es
   const srcFormat = gl.RGBA;
   const srcType = gl.UNSIGNED_BYTE;
   const pixel = new Uint8Array([0, 0, 255, 255]);
-  gl.texImage2D(gl.TEXTURE_2D, level, internallFormat, width, height, border, srcFormat, srcType, pixel);
-
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    level,
+    internallFormat,
+    width,
+    height,
+    border,
+    srcFormat,
+    srcType,
+    pixel
+  );
 
   let ballImage = new Image();
   ballImage.crossOrigin = "";
-  ballImage.src = "https://webglfundamentals.org/webgl/resources/keyboard.jpg";
+  ballImage.src = "http://localhost/game/images/texture/ball.jpg";
 
-  ballImage.onLoad = ()=>{
-    console.log("i am loaded")
-      gl.texImage2D(gl.TEXTURE_2D, level, internallFormat, srcFormat, srcType, ballImage)
-      gl.textParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.textParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.textParameteri(gl.texture2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.textParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  }
+  ballImage.onload = function () {
+    console.log("i am loaded");
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      internallFormat,
+      srcFormat,
+      srcType,
+      ballImage
+    );
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  };
 
   function degToRadian(deg) {
     return (Math.PI / 180) * deg;
@@ -114,9 +139,9 @@ const fs = `#version 300 es
   }
 
   let cameraDegree = 0;
+  let modelDegree = 0;
 
   function drawScene() {
-
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -130,19 +155,27 @@ const fs = `#version 300 es
     gl.bindVertexArray(vao);
     gl.uniform1i(sphereTextLocation, 1);
 
-    cameraDegree += 0.4;
-
+    // cameraDegree += 0.4;
+    modelDegree += 0.2;
+    let modelRadian = degToRadian(modelDegree);
     let cameraRadian = degToRadian(cameraDegree);
+
+    // -------------------------------------------------------------------
+    let modelMatrix = m4.yRotation(modelRadian);
+    gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
+    // --------------------------------------------------------------------
+
     let cameraMatrix = m4.yRotation(cameraRadian);
 
-    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 1.5);
+    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 0.0);
 
     cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
+    // cameraPosition = [0.0, 1.0, 1.5];
     cameraMatrix = initialCameraSetup(cameraPosition, up);
     viewMatrix = m4.inverse(cameraMatrix);
 
     let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    let fieldofView = degToRadian(60);
+    let fieldofView = degToRadian(90);
     let projectionMatrix = m4.perspective(fieldofView, aspect, 0.01, 1000);
 
     let indicesBuffer = gl.createBuffer();
