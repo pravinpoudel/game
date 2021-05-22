@@ -1,6 +1,6 @@
 const numbLatitude = 100;
 const numbLongitude = 100;
-const radius = 0.50;
+const radius = 1.0;
 const vertices = [];
 const indices = [];
 

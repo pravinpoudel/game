@@ -5,6 +5,8 @@ const cubePosition = [
   0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,
 ];
 const up = [0, 1, 0];
+let modelDegree = 0;
+let cameraYposition = 2.0;
 
 const vs = `#version 300 es
     in vec3 a_position;
@@ -36,7 +38,6 @@ const fs = `#version 300 es
 
     void main(){
      
-        //  generation of UV cordinate
         vec3 vertDirection = normalize(vertexCordinate - vec3(0.0, 0.0, 0.0));
         float u = atan(vertDirection.x, vertDirection.z)/(2.0*M_PI) + 0.5;
         float v = 0.5-vertDirection.y ;
@@ -139,7 +140,6 @@ const fs = `#version 300 es
   }
 
   let cameraDegree = 0;
-  let modelDegree = 0;
 
   function drawScene() {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
@@ -148,6 +148,8 @@ const fs = `#version 300 es
     gl.clearColor(0.5, 0.5, 0.5, 0.5);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
 
@@ -156,7 +158,7 @@ const fs = `#version 300 es
     gl.uniform1i(sphereTextLocation, 1);
 
     // cameraDegree += 0.4;
-    modelDegree += 0.2;
+
     let modelRadian = degToRadian(modelDegree);
     let cameraRadian = degToRadian(cameraDegree);
 
@@ -167,11 +169,12 @@ const fs = `#version 300 es
 
     let cameraMatrix = m4.yRotation(cameraRadian);
 
-    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, 0.0);
+    cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, cameraYposition);
 
     cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
     // cameraPosition = [0.0, 1.0, 1.5];
     cameraMatrix = initialCameraSetup(cameraPosition, up);
+
     viewMatrix = m4.inverse(cameraMatrix);
 
     let aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
