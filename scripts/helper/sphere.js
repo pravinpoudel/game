@@ -7,6 +7,7 @@ const indices = [];
 function sphereVertIndices() {
   let index = 0;
   let u, v;
+  let maxX = 0.0;
   for (let i = 0; i <= numbLatitude; i++) {
     theta = (i * Math.PI) / numbLatitude;
     let sintheta = Math.sin(theta);
@@ -23,8 +24,12 @@ function sphereVertIndices() {
       vertices[index++] = x;
       vertices[index++] = y;
       vertices[index++] = z;
+      if (x < maxX) {
+        maxX = x;
+      }
     }
   }
+  console.log(maxX);
 
   console.log(`index count1 is ${index}`);
 

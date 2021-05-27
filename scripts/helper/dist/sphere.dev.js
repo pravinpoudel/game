@@ -2,13 +2,14 @@
 
 var numbLatitude = 100;
 var numbLongitude = 100;
-var radius = 0.5;
+var radius = 1.0;
 var vertices = [];
 var indices = [];
 
 function sphereVertIndices() {
   var index = 0;
   var u, v;
+  var maxX = 0.0;
 
   for (var _i = 0; _i <= numbLatitude; _i++) {
     theta = _i * Math.PI / numbLatitude;
@@ -25,9 +26,14 @@ function sphereVertIndices() {
       vertices[index++] = x;
       vertices[index++] = y;
       vertices[index++] = z;
+
+      if (x < maxX) {
+        maxX = x;
+      }
     }
   }
 
+  console.log(maxX);
   console.log("index count1 is ".concat(index));
   index = 0;
   var p0, p1, i, j;

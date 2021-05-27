@@ -9,11 +9,17 @@
 
     switch (keyPressed) {
       case 68:
+        modelTranslation[0] += 0.2;
+        break;
+
+      case 65:
+        modelTranslation[0] -= 0.2;
+        break;
+
       case 39:
         modelDegree -= 1.0;
         break;
 
-      case 65:
       case 37:
         modelDegree += 1.0;
         break;
@@ -24,9 +30,15 @@
   };
 
   var viewToggle = function viewToggle(e) {
-    console.log("clicked");
+    if (cameraYposition == 0.0) {
+      cameraYposition = 2.5;
+      return;
+    }
+
+    cameraYposition = 0.0;
   };
 
-  window.addEventListener("keydown", rotateHandler); // toggleButton.addEventListener("onclick", viewToogle);
+  window.addEventListener("keydown", rotateHandler);
+  toggleButton.addEventListener("click", viewToggle);
 })();
 //# sourceMappingURL=domController.dev.js.map

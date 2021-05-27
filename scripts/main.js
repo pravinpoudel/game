@@ -1,53 +1,5 @@
 `use strict`;
 
-const cubePosition = [
-  1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0,
-  0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,
-];
-const up = [0, 1, 0];
-let modelDegree = 0;
-let cameraYposition = 2.0;
-
-const vs = `#version 300 es
-    in vec3 a_position;
-    in float a_textureCordinate;
-    
-    uniform mat4 u_ModelMatrix;
-    uniform mat4 u_wvProjectionMatrix;
-
-    out vec3 vertexCordinate;
-
-    void main(){
-        // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);  
-        gl_Position =  u_wvProjectionMatrix* u_ModelMatrix* vec4(a_position, 1.0);
-        //gl_Position =  u_wvProjectionMatrix* vec4(a_position, 1.0);
-        vertexCordinate = a_position;   
-    }
-`;
-
-const fs = `#version 300 es
-
-    #define M_PI 3.1415926535897932384626433832795
-
-    precision mediump float;
-
-    in vec3 vertexCordinate;
-    uniform sampler2D u_sphereText;
-
-    out vec4 outColor;
-
-    void main(){
-     
-        vec3 vertDirection = normalize(vertexCordinate - vec3(0.0, 0.0, 0.0));
-        float u = atan(vertDirection.x, vertDirection.z)/(2.0*M_PI) + 0.5;
-        float v = 0.5-vertDirection.y ;
-    
-        outColor = texture(u_sphereText, vec2(u,v));
-        // outColor = vec4(1.0, 0.8,  0.0, 1.0);
-    }
-
-`;
-
 (function () {
   const canvas = document.querySelector("#main-canvas");
   let gl = canvas.getContext("webgl2");
@@ -58,16 +10,29 @@ const fs = `#version 300 es
   var ext = gl.getExtension("OES_element_index_uint");
 
   let program = webglUtils.createProgramFromSources(gl, [vs, fs]);
+  let programTriangle = webglUtils.createProgramFromSources(gl, [
+    vsTriangle,
+    fsTriangle,
+  ]);
+  let programSkybox = webglUtils.createProgramFromSources(gl, [vsSkybox, fs]);
+
+  let vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+
   let positionLocation = gl.getAttribLocation(program, "a_position");
   let sphereTextLocation = gl.getUniformLocation(program, "u_sphereText");
+  let modelMatrixLocation = gl.getUniformLocation(program, "u_ModelMatrix");
   let viewProjectionLocation = gl.getUniformLocation(
     program,
     "u_wvProjectionMatrix"
   );
-  let modelMatrixLocation = gl.getUniformLocation(program, "u_ModelMatrix");
 
-  let vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
+  console.log(gl.getUniformLocation(programTriangle, "u_vpMatrix"));
+
+  let triangleAttributeLocs = {
+    position: gl.getAttribLocation(programTriangle, "a_position"),
+    modelMatrixLocation: gl.getUniformLocation(programTriangle, "u_vpMatrix"),
+  };
 
   const sphere = sphereVertIndices();
 
@@ -79,8 +44,14 @@ const fs = `#version 300 es
     gl.STATIC_DRAW
   );
 
-  gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+  let posTriangleBuffer = gl.createBuffer();
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, posTriangleBuffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array(positionTriangle),
+    gl.STATIC_DRAW
+  );
 
   let ballTexture = gl.createTexture();
   gl.activeTexture(gl.TEXTURE1);
@@ -126,29 +97,16 @@ const fs = `#version 300 es
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   };
 
-  function degToRadian(deg) {
-    return (Math.PI / 180) * deg;
-  }
-
-  function radToDegree(rad) {
-    return (180 / Math.PI) * rad;
-  }
-
-  function initialCameraSetup(cameraPosition, up) {
-    let cameraMatrix = m4.lookAt(cameraPosition, [1, 0, 0], up);
-    return cameraMatrix;
-  }
-
   let cameraDegree = 0;
 
   function drawScene() {
     webglUtils.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    gl.clearColor(0.5, 0.5, 0.5, 0.5);
+    gl.clearColor(0.0, 0.0, 1.0, 0.5);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.BACK);
+    // gl.cullFace(gl.CULL_FACE);
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
@@ -158,12 +116,18 @@ const fs = `#version 300 es
     gl.uniform1i(sphereTextLocation, 1);
 
     // cameraDegree += 0.4;
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBufferr);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
 
     let modelRadian = degToRadian(modelDegree);
     let cameraRadian = degToRadian(cameraDegree);
 
     // -------------------------------------------------------------------
-    let modelMatrix = m4.yRotation(modelRadian);
+    let modelMatrix = m4.yRotation(0);
+    let translationMatrix = m4.translate(modelMatrix, ...modelTranslation);
+    console.log(translationMatrix);
+    m4.multiply(modelMatrix, translationMatrix, modelMatrix);
     gl.uniformMatrix4fv(modelMatrixLocation, false, modelMatrix);
     // --------------------------------------------------------------------
 
@@ -172,7 +136,7 @@ const fs = `#version 300 es
     cameraMatrix = m4.translate(cameraMatrix, 0.0, 0.0, cameraYposition);
 
     cameraPosition = [cameraMatrix[12], cameraMatrix[13], cameraMatrix[14]];
-    // cameraPosition = [0.0, 1.0, 1.5];
+    cameraPosition = [0.0, 1.0, 0.0];
     cameraMatrix = initialCameraSetup(cameraPosition, up);
 
     viewMatrix = m4.inverse(cameraMatrix);
@@ -192,6 +156,30 @@ const fs = `#version 300 es
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
     gl.drawElements(gl.TRIANGLES, sphere[1].length, gl.UNSIGNED_SHORT, 0);
+
+    // -------------------triangle draw ---------------------
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, posTriangleBuffer);
+    gl.enableVertexAttribArray(triangleAttributeLocs.position);
+
+    gl.vertexAttribPointer(
+      triangleAttributeLocs.position,
+      3,
+      gl.FLOAT,
+      false,
+      0,
+      0
+    );
+
+    gl.useProgram(programTriangle);
+
+    gl.uniformMatrix4fv(
+      triangleAttributeLocs.modelMatrixLocation,
+      false,
+      vProjectionMatrix
+    );
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 3);
     window.requestAnimationFrame(drawScene);
   }
 
