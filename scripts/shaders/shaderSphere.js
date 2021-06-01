@@ -18,7 +18,7 @@ void main(){
     float v = 0.5-vertDirection.y ;
     uvCordinate = vec2(u,v);
 
-    // gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);  
+    gl_Position =  u_wvProjectionMatrix* vec4((2.0*a_position)- vec3(1.0, 1.0, 1.0), 1.0);  
     gl_Position =   vec4(a_position, 1.0);
     vertexCordinate = 0.5 - a_position;   
 }
@@ -49,9 +49,12 @@ void main(){
 
 const vsTriangle = `#version 300 es
     in vec3 a_position;
+    in vec2 a_textureCordinate;
+
     out vec3 varying_color;
 
     uniform mat4 u_vpMatrix;
+
 
     void main(){
         gl_Position = u_vpMatrix*vec4(a_position, 1.0);
@@ -63,24 +66,28 @@ const fsTriangle = `#version 300 es
 
     precision mediump float;
     in vec3 varying_color;
+    
     uniform mat4 u_model;
-    unfirom mat4 u_VPmatrix;
+    uniform mat4 u_VPmatrix;
+
 
     out vec4 outColor;
 
     void main(){
-        outColor = vec4(varying_color, 0.7);
+        outColor = vec4(1.0, 0.0, 0.0, 0.7);
     }
 `;
 
 const vsSkybox = `#version 300 es
 in vec3 a_position;
-out vec3 vertexPosition;
-
+out vec3 texPosition;
 uniform mat4 u_VPmatrix;
 uniform mat4 u_modelMatrix;
 
+// pass the vertex vector to fragment shader
+
 void main(){
+    texPosition = a_position;
     gl_Position = u_VPmatrix*(vec4(a_position, 1.0));
 }
 `;
@@ -89,13 +96,15 @@ const fsSkybox = `#version 300 es
 
 precision highp float;
 
-in vec3 vertexPosition;
+in vec3 texPosition;
 out vec4 outColor;
+
+uniform samplerCube u_SkyTexture;
 
 
 void main(){
 
-    outColor = vec4(0.0, 1.0, 0.0, 1.0);
-    // outColor = texture(sampleCube, vertexPosition);
+    // outColor = vec4(0.0, 1.0, 0.0, 1.0);
+    outColor = texture(u_SkyTexture, texPosition);
 }
 `;

@@ -14,6 +14,16 @@
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubePosition), gl.STATIC_DRAW);
   gl.enableVertexAttribArray(apositionLocation);
   gl.vertexAttribPointer(apositionLocation, 3, gl.FLOAT, false, 0, 0);
+  var indexedImage = new Image();
+  indexedImage.crossOrigin = "";
+  var cubeMapTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeMapTexture);
+
+  for (var i = 0, length = cubeImageSources.length; i < length; i++) {
+    indexedImage.src = "/images/texture/".concat(cubeImageSources[i]);
+    gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, indexedImage);
+  }
+
   var cameraAngle = 0;
 
   function draw() {
