@@ -10,6 +10,7 @@
   gl.useProgram(program);
 
   let positionLocation = gl.getAttribLocation(program, "a_position");
+  let vertexColorLocation = gl.getAttribLocation(program, "a_color");
   let modelMatrixLocation = gl.getUniformLocation(program, "u_modelMatrix");
   let viewProjectionLocation = gl.getUniformLocation(program, "u_vpMatrix");
   let scaleLocation = gl.getUniformLocation(program, "u_scale");
@@ -31,24 +32,31 @@
   gl.bindVertexArray(vao);
   let cameraAngle = 0.0;
   let modelAngle = 0.0;
-  let distanceScale = 1.3;
+  let distanceScale = 1.1;
 
   let bufferLists = geometries.map((geometry) => {
-        let positionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-        let localPosition = geometry.attributes.position;
-        
-        gl.bufferData(
-            gl.ARRAY_BUFFER,
-            new Float32Array([...localPosition]),
-            gl.STATIC_DRAW
-        );
-      return {
-          positionBuffer,
-          length:localPosition.length
-      };
-  });
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    let localPosition = geometry.attributes.position;
 
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([...localPosition]),
+      gl.STATIC_DRAW
+    );
+
+    let colorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+    let vColor = geometry.attributes.colorValue;
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vColor), gl.STATIC_DRAW);
+
+    return {
+      positionBuffer,
+      colorBuffer,
+      length: localPosition.length,
+    };
+  });
 
   let cameraMatrix = m4.yRotation(cameraAngle);
   cameraMatrix = m4.translate(
@@ -83,12 +91,17 @@
     let vProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
     gl.uniformMatrix4fv(viewProjectionLocation, false, vProjectionMatrix);
 
-    bufferLists.forEach(({positionBuffer:bufferName, length})=>{
-        gl.bindBuffer(gl.ARRAY_BUFFER, bufferName);
-        gl.enableVertexAttribArray(positionLocation);
-        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, length / 3);
-    })
+    bufferLists.forEach(({ positionBuffer, colorBuffer, length }) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+      gl.enableVertexAttribArray(vertexColorLocation);
+      gl.vertexAttribPointer(vertexColorLocation, 3, gl.FLOAT, false, 0, 0);
+
+      gl.drawArrays(gl.TRIANGLES, 0, length / 3);
+    });
     window.requestAnimationFrame(draw);
   }
   window.requestAnimationFrame(draw);
