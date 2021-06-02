@@ -1,12 +1,15 @@
 import BoxGeometry from '../src/box';
 
 test('initializing BoxGeometry creates 8 vertices with center on origin', () => {
-    for (let i = 0; i < testNumbers; i++) { 
-        expect(boxGeometriesToTest()[i].vertices).toEqual(verticesForBoxGeometriesToTest()[i]);
+    const boxGeometries = boxGeometriesToTest();
+    const expectedVertices = verticesForBoxGeometriesToTest()
+    for (let i = 0; i < boxGeometries.length; i++) { 
+        expect(boxGeometries[i].vertices).toEqual(expectedVertices[i]);
     }
 });
 
 test('BoxGeometry always have 12 triangles indices for 6 sides of box', () => {
+    const boxGeometries = boxGeometriesToTest();
     const expectedIndices = [
         0, 1, 2,
         0, 3, 2,
@@ -21,12 +24,10 @@ test('BoxGeometry always have 12 triangles indices for 6 sides of box', () => {
         1, 5, 4,
         1, 0, 4,
     ];
-    for (let i = 0; i < testNumbers; i++) { 
-        expect(boxGeometriesToTest()[i].indices).toEqual(expectedIndices);
+    for (let i = 0; i < boxGeometries.length; i++) { 
+        expect(boxGeometries[i].indices).toEqual(expectedIndices);
     }
 });
-
-const testNumbers = boxGeometriesToTest().length;
 
 function boxGeometriesToTest() {
     return [

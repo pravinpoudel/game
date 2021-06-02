@@ -1,22 +1,23 @@
 import PlaneGeometry from '../src/plane';
 
 test('initializing PlaneGeometry creates vertices with center on origin', () => {
-    for (let i = 0; i < testNumbers; i++) { 
-        expect(planeGeometriesToTest()[i].vertices).toEqual(verticesForPlaneGeometriesToTest()[i]);
+    const planeGeometries = planeGeometriesToTest();
+    const expectedVertices = verticesForPlaneGeometriesToTest()
+    for (let i = 0; i < planeGeometries.length; i++) { 
+        expect(planeGeometries[i].vertices).toEqual(expectedVertices[i]);
     }
 });
 
 test('PlaneGeometry always have 2 triangles indices to form a plane', () => {
+    const planeGeometries = planeGeometriesToTest();
     const expectedIndices = [
         0, 1, 2,
         0, 3, 2,
     ];
-    for (let i = 0; i < testNumbers; i++) { 
-        expect(planeGeometriesToTest()[i].indices).toEqual(expectedIndices);
+    for (let i = 0; i < planeGeometries.length; i++) { 
+        expect(planeGeometries[i].indices).toEqual(expectedIndices);
     }
 });
-
-const testNumbers = planeGeometriesToTest().length;
 
 function planeGeometriesToTest() {
     return [
