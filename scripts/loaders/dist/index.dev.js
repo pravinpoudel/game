@@ -82,7 +82,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           gl.bindVertexArray(vao);
           cameraAngle = 0.0;
           modelAngle = 0.0;
-          distanceScale = 1.1;
+          distanceScale = 1.0;
           bufferLists = geometries.map(function (geometry) {
             var positionBuffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);

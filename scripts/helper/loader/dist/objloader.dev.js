@@ -16,12 +16,14 @@ function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.
 
 function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
-function objLoader() {
-  var response, text, lines, regexKeyword, material, object, group, verticesIndices, geometries, geometry, webglData, positionCordinate, textureCordinate, normalCordinate, vertexColor, vertexData, addVertex, resetGeometry, setGeometry, addMethods, geometryRange, getRange, i, length, line, result, _result, keyword, unparsedArgs, datas, handlerFunction, minMax;
+var matLib = [];
 
-  return regeneratorRuntime.async(function objLoader$(_context) {
+function objLoader() {
+  var response, text, lines, regexKeyword, material, object, group, verticesIndices, geometries, geometry, webglData, positionCordinate, textureCordinate, normalCordinate, vertexColor, vertexData, addVertex, resetGeometry, setGeometry, addMethods, geometryRange, getRange, i, length, line, result, _result, keyword, unparsedArgs, datas, handlerFunction, _i2, _length, data, minMax;
+
+  return regeneratorRuntime.async(function objLoader$(_context2) {
     while (1) {
-      switch (_context.prev = _context.next) {
+      switch (_context2.prev = _context2.next) {
         case 0:
           getRange = function _ref7(geometries) {
             return geometries.reduce(function (_ref, _ref2) {
@@ -110,16 +112,16 @@ function objLoader() {
             });
           };
 
-          _context.next = 7;
+          _context2.next = 7;
           return regeneratorRuntime.awrap(fetch("/game/resources/models/objs/Chair/Chair.obj"));
 
         case 7:
-          response = _context.sent;
-          _context.next = 10;
+          response = _context2.sent;
+          _context2.next = 10;
           return regeneratorRuntime.awrap(response.text());
 
         case 10:
-          text = _context.sent;
+          text = _context2.sent;
           lines = text.split("\n");
           regexKeyword = /(\w*)(?: )*(.*)/;
           material = "basic";
@@ -158,6 +160,9 @@ function objLoader() {
                 addVertex(data[i + 2]);
               }
             },
+            mtllib: function mtllib(data) {
+              matLib.push(data);
+            },
             usemtl: function usemtl(data) {
               resetGeometry();
               material = data;
@@ -170,28 +175,28 @@ function objLoader() {
 
         case 26:
           if (!(i < length)) {
-            _context.next = 43;
+            _context2.next = 43;
             break;
           }
 
           line = lines[i].trim();
 
           if (!(line === "" || line.startsWith("#"))) {
-            _context.next = 30;
+            _context2.next = 30;
             break;
           }
 
-          return _context.abrupt("continue", 40);
+          return _context2.abrupt("continue", 40);
 
         case 30:
           result = regexKeyword.exec(line);
 
           if (result) {
-            _context.next = 33;
+            _context2.next = 33;
             break;
           }
 
-          return _context.abrupt("continue", 40);
+          return _context2.abrupt("continue", 40);
 
         case 33:
           _result = _slicedToArray(result, 3), keyword = _result[1], unparsedArgs = _result[2];
@@ -199,31 +204,64 @@ function objLoader() {
           handlerFunction = addMethods[keyword];
 
           if (handlerFunction) {
-            _context.next = 39;
+            _context2.next = 39;
             break;
           }
 
           console.warn("".concat(keyword, " isnot handled by this program"));
-          return _context.abrupt("continue", 40);
+          return _context2.abrupt("continue", 40);
 
         case 39:
           handlerFunction(datas);
 
         case 40:
           i++;
-          _context.next = 26;
+          _context2.next = 26;
           break;
 
         case 43:
+          matLib.forEach(function _callee(element, index) {
+            var url, materialURL, response, lines;
+            return regeneratorRuntime.async(function _callee$(_context) {
+              while (1) {
+                switch (_context.prev = _context.next) {
+                  case 0:
+                    url = new URL("./resources/models/objs/Chair/", window.location.href);
+                    materialURL = new URL(element, url);
+                    _context.t0 = regeneratorRuntime;
+                    _context.next = 5;
+                    return regeneratorRuntime.awrap(fetch(materialURL));
+
+                  case 5:
+                    _context.t1 = _context.sent.text();
+                    _context.next = 8;
+                    return _context.t0.awrap.call(_context.t0, _context.t1);
+
+                  case 8:
+                    response = _context.sent;
+                    lines = response.split("\n");
+
+                  case 10:
+                  case "end":
+                    return _context.stop();
+                }
+              }
+            });
+          });
+
+          for (_i2 = 0, _length = lines.length; _i2 < _length; _i2++) {
+            data = lines[_i2].trim();
+          }
+
           minMax = getRange(geometries);
-          return _context.abrupt("return", {
+          return _context2.abrupt("return", {
             geometries: geometries,
             minMax: minMax
           });
 
-        case 45:
+        case 47:
         case "end":
-          return _context.stop();
+          return _context2.stop();
       }
     }
   });

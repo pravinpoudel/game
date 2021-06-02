@@ -1,3 +1,5 @@
+const matLib = [];
+
 async function objLoader() {
   const response = await fetch("/game/resources/models/objs/Chair/Chair.obj");
   const text = await response.text();
@@ -93,6 +95,9 @@ async function objLoader() {
         addVertex(data[i + 2]);
       }
     },
+    mtllib(data) {
+      matLib.push(data);
+    },
     usemtl(data) {
       resetGeometry();
       material = data;
@@ -150,6 +155,18 @@ async function objLoader() {
     }
     handlerFunction(datas);
   }
+
+  matLib.forEach(async (element, index) => {
+    let url = new URL("./resources/models/objs/Chair/", window.location.href);
+    let materialURL = new URL(element, url);
+    const response = await (await fetch(materialURL)).text();
+    const lines = response.split("\n");
+  });
+
+  for (let i = 0, length = lines.length; i < length; i++) {
+    const data = lines[i].trim();
+  }
+
   let minMax = getRange(geometries);
   return {
     geometries,

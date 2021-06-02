@@ -32,7 +32,7 @@
   gl.bindVertexArray(vao);
   let cameraAngle = 0.0;
   let modelAngle = 0.0;
-  let distanceScale = 1.1;
+  let distanceScale = 1.0;
 
   let bufferLists = geometries.map((geometry) => {
     let positionBuffer = gl.createBuffer();
