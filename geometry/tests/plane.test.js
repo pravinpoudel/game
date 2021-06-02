@@ -6,6 +6,16 @@ test('initializing PlaneGeometry creates vertices with center on origin', () => 
     }
 });
 
+test('PlaneGeometry always have 2 triangles indices to form a plane', () => {
+    const expectedIndices = [
+        0, 1, 2,
+        0, 3, 2,
+    ];
+    for (let i = 0; i < testNumbers; i++) { 
+        expect(planeGeometriesToTest[i].vertices).toEqual(expectedIndices);
+    }
+});
+
 const testNumbers = planeGeometriesToTest.length;
 
 function planeGeometriesToTest() {

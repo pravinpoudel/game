@@ -8,6 +8,10 @@ export default class PlaneGeometry {
             x, y, 0,
             -x, y, 0,
         ];
+        this.indices = [
+            0, 1, 2,
+            0, 3, 2,
+        ];
     }
 }
 
