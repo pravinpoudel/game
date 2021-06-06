@@ -1,4 +1,4 @@
-export default class PlaneGeometry {
+export default class BoxGeometry {
     constructor(length, width, depth) {
         let x = width/2;
         let y = length/2;
