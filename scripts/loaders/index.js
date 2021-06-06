@@ -17,8 +17,7 @@
 
   // find the range and extend of an object to calculate the offset to properly view the object
 
-  let { geometries, material, minMax } = await objFileLoader();
-  console.log(material)
+  let { geometries, materials, minMax } = await objFileLoader();
   let { min: minValue, max: maxValue } = minMax;
   const range = m4.subtractVectors(maxValue, minValue);
   const maxSideLength = m4.length(range);
@@ -52,10 +51,13 @@
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vColor), gl.STATIC_DRAW);
 
+    let material = geometry.material;
+
     return {
       positionBuffer,
       colorBuffer,
       length: localPosition.length,
+      material: materials[material]
     };
   });
 
