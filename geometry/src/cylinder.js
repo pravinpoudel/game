@@ -1,4 +1,4 @@
-export default class CircleGeometry {
+export default class CylinderGeometry {
     constructor(radius, height) {
         let verticesCount = 16;
         let alpha = (2 * Math.PI) / verticesCount;
