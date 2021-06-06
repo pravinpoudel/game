@@ -1,4 +1,4 @@
-export default class CircleGeometry {
+export default class SphereGeometry {
     constructor(radius) {
         let vertices = [];
         let indices = [];
