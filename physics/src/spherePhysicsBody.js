@@ -1,4 +1,4 @@
-export default class BoxPhysicsBody {
+export default class SpherePhysicsBody {
     constructor(radius) {
         this.radius = radius
     }

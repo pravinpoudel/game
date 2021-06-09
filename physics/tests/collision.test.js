@@ -1,6 +1,6 @@
 import Collision from '../src/collision'
 
-test('Collision', () => {
+test('Collision test for box to box', () => {
     const box1 = {
         minX: -0.5,
         maxX: 0.5,
@@ -21,7 +21,7 @@ test('Collision', () => {
     expect(new Collision().collidedBoxToBox(box1, box2)).toBe(true);
 });
 
-test('Collision', () => {
+test('Collision test for box to sphere', () => {
     const box1 = {
         minX: -0.5,
         maxX: 0.5,
@@ -40,7 +40,7 @@ test('Collision', () => {
     expect(new Collision().collidedBoxToSphere(box1, sphere)).toBe(true);
 });
 
-test('Collision', () => {
+test('Collision test for sphere to sphere', () => {
     let sphere1 = {
         x: 0,
         y: 0,
