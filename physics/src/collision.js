@@ -16,4 +16,11 @@ export default class Collision {
 
         return distance < sphere.radius;
     }
+
+    collidedSphereToSphere(sphere1, sphere2) {
+        var distance = Math.sqrt((sphere1.x - sphere2.x) * (sphere1.x - sphere2.x) +
+                           (sphere1.y - sphere2.y) * (sphere1.y - sphere2.y) +
+                           (sphere1.z - sphere2.z) * (sphere1.z - sphere2.z));
+        return distance < (sphere1.radius + sphere2.radius);
+    }
 }

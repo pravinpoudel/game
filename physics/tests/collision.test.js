@@ -39,3 +39,19 @@ test('Collision', () => {
     
     expect(new Collision().collidedBoxToSphere(box1, sphere)).toBe(true);
 });
+
+test('Collision', () => {
+    let sphere1 = {
+        x: 0,
+        y: 0,
+        z: 0,
+        radius: 1,
+    }
+    let sphere2 = {
+        x: 1,
+        y: 1,
+        z: 1,
+        radius: 1.5,
+    }
+    expect(new Collision().collidedSphereToSphere(sphere1, sphere2)).toBe(true);
+});
