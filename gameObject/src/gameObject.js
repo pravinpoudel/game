@@ -7,9 +7,9 @@ export default class GameObject {
             z: 0,
         }
         this.scale = {
-            x: 0,
-            y: 0,
-            z: 0,
+            x: 1,
+            y: 1,
+            z: 1,
         }
         this.angle = {
             x: 0,
@@ -22,5 +22,11 @@ export default class GameObject {
         this.position.x += x
         this.position.y += y
         this.position.z += z
+    }
+
+    scaleBy(scale) {
+        this.scale.x *= scale
+        this.scale.y *= scale
+        this.scale.z *= scale
     }
 }
