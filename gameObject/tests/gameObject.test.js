@@ -35,3 +35,14 @@ test('GameObject scales by given value', () => {
     gameObject.scaleBy(0.25)
     expect(gameObject.scale).toEqual(expectedScale2);
 });
+
+
+test('GameObject rotates by given value on given axis', () => {
+    let expectedAngle1 = {x: Math.PI/2, y: 0, z: 0}
+    let expectedAngle2 = {x: Math.PI/2, y: Math.PI/2, z:Math.PI/2}
+    let gameObject = new GameObject()
+    gameObject.rotateBy(Math.PI/2, 1, 0, 0)
+    expect(gameObject.angle).toEqual(expectedAngle1);
+    gameObject.rotateBy(Math.PI/2, 0, 1, 1)
+    expect(gameObject.angle).toEqual(expectedAngle2);
+});

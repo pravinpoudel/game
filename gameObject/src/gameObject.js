@@ -29,4 +29,10 @@ export default class GameObject {
         this.scale.y *= scale
         this.scale.z *= scale
     }
+
+    rotateBy(angle, x, y, z) {
+        this.angle.x += angle * x
+        this.angle.y += angle * y
+        this.angle.z += angle * z
+    }
 }
