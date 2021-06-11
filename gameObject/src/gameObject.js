@@ -1,5 +1,6 @@
 export default class GameObject {
-    constructor() {
+    constructor(geometry = null) {
+        this.geometry = geometry
         this.position = {
             x: 0,
             y: 0,
