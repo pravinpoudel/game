@@ -22,7 +22,7 @@ void main(){
     vec4 worldPosition = u_modelMatrix*vec4(a_position, 1.0);
     surfaceView = u_cameraWorld- vec3(worldPosition);
 
-    v_normalWorld = (u_worldNormal*vec4(a_normal, 0.0)).xyz;
+    v_normalWorld = (mat3(u_modelMatrix)*a_normal);
 
     v_color = a_color;
 
@@ -51,7 +51,7 @@ uniform vec3 diffuse;
 uniform vec3 specular;
 uniform vec3 emmisive;
 uniform float shininess;
-uniform vec3 opacity;
+uniform float opacity;
 uniform vec3 u_ambientLight;
 
 
@@ -60,16 +60,17 @@ void main(){
     vec3 normalDirection = normalize(v_normalWorld);
     vec3 viewDirection = normalize(surfaceView);
 
+    vec3 lightDirectionNormalized = normalize(u_lightDirection);
     vec3 ambientLight = v_color*ambient*u_ambientLight;
 
     vec3 directionalLight = vec3(0.8, 0.8, 0.8);    
-    float lambertianFactor = clamp(dot(normalDirection, u_lightDirection), 0.0, 1.0);
+    float lambertianFactor = clamp(dot(normalDirection, lightDirectionNormalized), 0.0, 1.0);
     vec3 effectiveDiffuse = v_color*diffuse*lambertianFactor*directionalLight;
 
-    vec3 halfVector = normalize(u_lightDirection + viewDirection);
+    vec3 halfVector = normalize(lightDirectionNormalized + viewDirection);
     float specularLight = clamp(dot(halfVector, normalDirection), 0.0, 1.0);
-    vec3 efficientSpecular = specular*pow(specularLight, shininess);
+    vec3 effectiveSpecular = specular*pow(specularLight, shininess);
 
-    outColor = vec4(emmisive + ambient+ effectiveDiffuse + specular, opacity); 
+    outColor = vec4( emmisive + ambientLight + effectiveDiffuse + effectiveSpecular, 1.0); 
 }
 `;

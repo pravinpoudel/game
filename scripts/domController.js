@@ -3,12 +3,19 @@
   let toggleButton = document.getElementById("toggle-button");
   const rotateHandler = (e) => {
     let keyPressed = e.keyCode;
-    switch (keyPressed) {
+    console.log(keyPressed);
+    switch (Number(keyPressed)) {
       case 68:
         modelTranslation[0] += 0.2;
         break;
       case 65:
         modelTranslation[0] -= 0.2;
+        break;
+      case 87:
+        modelTranslation[2] -= 0.2;
+        break;
+      case 88:
+        modelTranslation[2] += 0.2;
         break;
       case 39:
         modelDegree -= 1.0;

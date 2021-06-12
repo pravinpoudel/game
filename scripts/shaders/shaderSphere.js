@@ -88,7 +88,7 @@ uniform mat4 u_modelMatrix;
 
 void main(){
     texPosition = a_position;
-    gl_Position = u_VPmatrix*(vec4(a_position, 1.0));
+    gl_Position = u_VPmatrix*u_modelMatrix*(vec4(a_position, 1.0));
 }
 `;
 
@@ -104,7 +104,8 @@ uniform samplerCube u_SkyTexture;
 
 void main(){
 
-    // outColor = vec4(0.0, 1.0, 0.0, 1.0);
-    outColor = texture(u_SkyTexture, texPosition);
+    // outColor = texture(u_SkyTexture, texPosition);
+    outColor = vec4(0.0, 1.0, 0.0, 1.0);
+    
 }
 `;
