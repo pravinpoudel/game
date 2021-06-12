@@ -35,6 +35,8 @@ uniform sampler2D u_sphereText;
 out vec4 outColor;
 in vec2 uvCordinate;
 
+
+
 void main(){
  
     // vec3 vertDirection = normalize(vertexCordinate - vec3(0.0, 0.0, 0.0));
@@ -80,14 +82,21 @@ const fsTriangle = `#version 300 es
 
 const vsSkybox = `#version 300 es
 in vec3 a_position;
-out vec3 texPosition;
+in vec3 a_normal;
+
+
 uniform mat4 u_VPmatrix;
 uniform mat4 u_modelMatrix;
+uniform mat4 u_invTransposeNormal;
 
-// pass the vertex vector to fragment shader
+out vec3 v_normal;
+out vec3 f_position;
+out vec3 texPosition;
 
 void main(){
     texPosition = a_position;
+    v_normal = vec3(u_invTransposeNormal*vec4(a_normal, 0.0)).xyz;
+    f_position = a_position;
     gl_Position = u_VPmatrix*u_modelMatrix*(vec4(a_position, 1.0));
 }
 `;
@@ -97,15 +106,45 @@ const fsSkybox = `#version 300 es
 precision highp float;
 
 in vec3 texPosition;
+in vec3 v_normal;
+in vec3 f_position;
+
 out vec4 outColor;
 
 uniform samplerCube u_SkyTexture;
 
+uniform vec3 emission;
+uniform vec3 materialAmbient;
+uniform vec3 materialDiffuse;
+uniform vec3 materialSpecular;
+uniform float shininess;
+
+uniform vec3 lightDirection;
+uniform vec3 cameraPosition;
+
+uniform vec3 ambientLight;
+uniform vec3 diffuseLight;
+uniform vec3 specularLight;
 
 void main(){
 
+    vec3 f_normal = normalize(v_normal);
+
+    vec3 effectiveAmbient = ambientLight*materialAmbient;
+
+    vec3 f_lightDirection = normalize(lightDirection);
+
+    float lambertCofficient = max(dot(f_lightDirection, f_normal), 0.0);
+    vec3 effectiveDiffuse = lambertCofficient*materialDiffuse*diffuseLight;
+
+    vec3 surfacetoView = normalize(cameraPosition - f_position);
+    vec3 halfVector = lightDirection + surfacetoView;
+    float specular = dot(halfVector, f_normal);
+    vec3 effectiveSpecular = materialSpecular*pow(specular, shininess); 
+
+    outColor = vec4(emission + effectiveDiffuse + effectiveSpecular, 1.0);
+
     // outColor = texture(u_SkyTexture, texPosition);
-    outColor = vec4(0.0, 1.0, 0.0, 1.0);
-    
+    // outColor = vec4(0.0, 1.0, 0.0, 1.0);    
 }
 `;
