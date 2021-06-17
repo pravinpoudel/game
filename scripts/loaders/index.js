@@ -29,7 +29,8 @@
 
   // find the range and extend of an object to calculate the offset to properly view the object
 
-  let { geometries, materials, minMax } = await objFileLoader();
+  let { geometries, materials, minMax } = await objFileLoader(gl);
+
   console.log(materials);
   let { min: minValue, max: maxValue } = minMax;
   const range = m4.subtractVectors(maxValue, minValue);

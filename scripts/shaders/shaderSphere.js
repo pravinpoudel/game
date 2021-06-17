@@ -96,7 +96,7 @@ out vec3 texPosition;
 void main(){
     texPosition = a_position;
     v_normal = vec3(u_invTransposeNormal*vec4(a_normal, 0.0)).xyz;
-    f_position = a_position;
+    f_position = vec3(u_modelMatrix*vec4(a_position, 1.0)).rgb;
     gl_Position = u_VPmatrix*u_modelMatrix*(vec4(a_position, 1.0));
 }
 `;
@@ -111,10 +111,12 @@ in vec3 f_position;
 
 out vec4 outColor;
 
-uniform samplerCube u_SkyTexture;
+// uniform samplerCube u_SkyTexture;
+
+uniform vec3 materialAmbient;
 
 uniform vec3 emission;
-uniform vec3 materialAmbient;
+
 uniform vec3 materialDiffuse;
 uniform vec3 materialSpecular;
 uniform float shininess;
@@ -139,12 +141,14 @@ void main(){
 
     vec3 surfacetoView = normalize(cameraPosition - f_position);
     vec3 halfVector = lightDirection + surfacetoView;
-    float specular = dot(halfVector, f_normal);
-    vec3 effectiveSpecular = materialSpecular*pow(specular, shininess); 
+    float specular = max(dot(halfVector, f_normal), 0.0);
+    vec3 effectiveSpecular = specularLight*materialSpecular*pow(specular, shininess); 
 
-    outColor = vec4(emission + effectiveDiffuse + effectiveSpecular, 1.0);
+    outColor = vec4(emission + effectiveAmbient + effectiveDiffuse + effectiveSpecular, 1.0);
+
+    outColor = vec4(effectiveAmbient+ effectiveDiffuse , 1.0);
 
     // outColor = texture(u_SkyTexture, texPosition);
-    // outColor = vec4(0.0, 1.0, 0.0, 1.0);    
+    //  outColor = vec4(0.0, 1.0, 0.0, 1.0);    
 }
 `;

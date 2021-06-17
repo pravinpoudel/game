@@ -14,9 +14,9 @@
   let apositionLocation = gl.getAttribLocation(programScene, "a_position");
   let normalLocation = gl.getAttribLocation(programScene, "a_normal");
   let modelLocation = gl.getUniformLocation(programScene, "u_modelMatrix");
-  
+
   let cameraLocation = gl.getUniformLocation(programScene, "cameraPosition");
-  
+
   let invTransposeModelLocation = gl.getUniformLocation(
     programScene,
     "u_invTransposeNormal"
@@ -28,9 +28,12 @@
     "lightDirection"
   );
 
+  let materialAmbientLocation = gl.getUniformLocation(
+    programScene,
+    "materialAmbient"
+  );
+
   let emissionLocation = gl.getUniformLocation(programScene, "emission");
-  
-  let materialAmbientLocation = gl.getUniformLocation(programScene,"materialAmbient");
 
   let materialDiffuseLocation = gl.getUniformLocation(
     programScene,
@@ -60,23 +63,40 @@
   // light
 
   const light = {
-    ambient: [1.0, 1.0, 1.0],
+    ambient: [0.5, 0.5, 0.5],
     diffuse: [1.0, 0.6, 0.6],
-    specular: [0.8, 1.0, 1.0],
+    specular: [1.0, 1.0, 1.0],
   };
 
   gl.uniform3fv(ambiemtLightLocation, light.ambient);
   gl.uniform3fv(diffuseLightLocation, light.diffuse);
   gl.uniform3fv(specularLightLocation, light.specular);
 
-  // -----------------------------------
 
-  let material = {
+  // =================================================
+
+  let floorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, floorBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(floorVertices), gl.STATIC_DRAW);
+
+  
+
+   let material = {
     emission: [0.2, 1.0, 1.0],
     ambient: [0.2, 0.2, 0.2],
     diffuse: [1.0, 0.6, 0.6],
     specular: [1.0, 1.0, 1.0],
-    shininess: 100,
+    shininess: 10,
+  };
+
+  // -----------------------------------
+
+  material = {
+    emission: [0.2, 1.0, 1.0],
+    ambient: [0.2, 0.2, 0.2],
+    diffuse: [1.0, 0.6, 0.6],
+    specular: [1.0, 1.0, 1.0],
+    shininess: 10,
   };
 
   let positionBuffer = gl.createBuffer();
@@ -103,7 +123,7 @@
     if (globalRotationValue[index] == undefined) {
       globalRotationValue[index] = 0;
     }
-    globalRotationValue[index] = rotation;
+    globalRotationValue[index] += rotation;
     let modelMatrix;
     modelMatrix = m4.identity(modelMatrix);
     m4.translate(
@@ -143,6 +163,7 @@
 
     gl.bindVertexArray(vao);
 
+    cameraAngle += 0.00;
     let camera = m4.yRotation(cameraAngle);
     let cameraPosition = [...modelTranslation];
     cameraPosition = [
@@ -154,7 +175,7 @@
 
     gl.uniform3fv(cameraLocation, [...cameraPosition]);
 
-    gl.uniform3fv(lightDirectionLocation, [20, 20, 20]);
+    gl.uniform3fv(lightDirectionLocation, [...cameraPosition]);
 
     let viewMatrix = m4.inverse(camera);
 
@@ -186,10 +207,10 @@
 
     material = {
       emission: [0.2, 1.0, 1.0],
-      ambient: [0.2, 0.2, 0.2],
+      ambient: [1.0, 0.2, 0.2],
       diffuse: [1.0, 0.6, 0.6],
       specular: [1.0, 1.0, 1.0],
-      shininess: 100,
+      shininess: 40,
     };
 
     gl.uniform3fv(emissionLocation, material.emission);
@@ -209,7 +230,7 @@
 
     parameters = {
       index: 1,
-      rotation: 0.0,
+      rotation: 0.01,
       scale: { x: 1.0, y: 0.4, z: 0.3 },
       translate: { x: 2.0, y: 1.0, z: -2.0 },
     };
@@ -222,10 +243,10 @@
 
     material = {
       emission: [0.2, 1.0, 1.0],
-      ambient: [0.2, 0.2, 0.2],
+      ambient: [1.0, 1.0, 0.2],
       diffuse: [1.0, 0.6, 0.6],
       specular: [1.0, 1.0, 1.0],
-      shininess: 100,
+      shininess: 40,
     };
 
     gl.uniform3fv(emissionLocation, material.emission);
@@ -252,7 +273,7 @@
 
     material = {
       emission: [0.2, 1.0, 1.0],
-      ambient: [0.2, 0.2, 0.2],
+      ambient: [1.0, 0.2, 0.2],
       diffuse: [1.0, 0.6, 0.6],
       specular: [1.0, 1.0, 1.0],
       shininess: 100,
@@ -265,6 +286,46 @@
     gl.uniform1f(shininessLocation, material.shininess);
 
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+
+    // --------------------------------------------------------------
+
+  //   gl.enableVertexAttribArray(apositionLocation);
+  //   gl.vertexAttribPointer(
+  //   apositionLocation,
+  //   3,
+  //   gl.FLOAT,
+  //   false,
+  //   0,
+  //   0
+  // );
+  // parameters = {
+  //     index: 3,
+  //     rotation: 0.0,
+  //     scale: { x: 1.0, y: 1.0, z: 1.0 },
+  //     translate: { x: 0.0, y: 0.0, y: 0.0, z: 0.0 },
+  //   };
+
+  //   modelMatrix = generateModel(parameters);
+  //   invModel = m4.inverse(modelMatrix);
+
+  //   gl.uniformMatrix4fv(modelLocation, false, modelMatrix);
+  //   gl.uniformMatrix4fv(invTransposeModelLocation, true, invModel);
+
+  //   material = {
+  //     emission: [0.2, 1.0, 1.0],
+  //     ambient: [1.0, 0.2, 0.2],
+  //     diffuse: [1.0, 0.6, 0.6],
+  //     specular: [1.0, 1.0, 1.0],
+  //     shininess: 100,
+  //   };
+
+  //   gl.uniform3fv(emissionLocation, material.emission);
+  //   gl.uniform3fv(materialAmbientLocation, material.ambient);
+  //   gl.uniform3fv(materialDiffuseLocation, material.diffuse);
+  //   gl.uniform3fv(materialSpecularLocation, material.specular);
+  //   gl.uniform1f(shininessLocation, material.shininess);
+
+  //   gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
 
     window.requestAnimationFrame(draw);
   }

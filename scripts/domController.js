@@ -18,10 +18,10 @@
         modelTranslation[2] += 0.2;
         break;
       case 39:
-        modelDegree -= 1.0;
+        modelDegree -= 0.01;
         break;
       case 37:
-        modelDegree += 1.0;
+        modelDegree += 0.01;
         break;
       default:
         console.log(`${keyPressed} clicked`);

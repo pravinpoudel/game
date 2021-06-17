@@ -1,7 +1,7 @@
 let matLib;
 let geometries = [];
 
-async function objFileLoader() {
+async function objFileLoader(gl) {
   async function objLoader() {
     const response = await fetch("/game/resources/models/objs/Chair/Chair.obj");
     const text = await response.text();
@@ -198,6 +198,76 @@ async function objFileLoader() {
       },
     };
 
+    function createDefaultTexture() {
+      let texture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        1,
+        1,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        new Uint8Array([255, 255, 255, 255])
+      );
+      return texture;
+    }
+
+    function loadImage(url, texture) {
+      let image = new Image();
+      img.src = url;
+      img.crossOriginSource = "";
+      img.onload = () => {
+        // safe side for large texture, otherwise not needed as we have already binded this above
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          gl.RGBA,
+          gl.RGBA,
+          gl.UNSIGNED_BYTE,
+          image
+        );
+
+        if (isPowerOf2(img.width) && isPowerOf2(img.height)) {
+          gl.generateMipmap(gl.TEXTURE_2D);
+        }
+
+        gl.texParameter2i(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameter2i(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameter2i(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      };
+
+      return texture;
+    }
+
+    function textureLoader() {
+      const textureList = {};
+      let texture = createDefaultTexture();
+      let materialLists = Object.values(materials);
+      materialLists.forEach((material) => {
+        Object.entries(material)
+          .filter((value) => {
+            if (value[0].endsWith("Map")) {
+              return true;
+            }
+          })
+          .map(([textureName, textureImage]) => {
+            // find name of image from textureImage
+            // you dont need to find the name because same name texture may be in different folder
+            const texturemapped = materialLists[textureImage];
+            if (!existingTexture) {
+              // find URL of image
+              let imageURL = new URL(textureImage, url).href;
+              texturemapped = loadImage(imageURL, texture);
+            }
+            material[textureName] = texturemapped;
+          });
+      });
+    }
+
     let url = new URL("./resources/models/objs/Chair/", window.location.href);
     let materialURL = new URL(matLib, url).href;
     const response = await (await fetch(materialURL)).text();
@@ -223,10 +293,14 @@ async function objFileLoader() {
 
       handler(datas);
     }
+
+    textureLoader();
     return materials;
   }
   await objLoader();
   materials = await materialLoader();
+  // await textureLoader();
+
   let minMax = getRange(geometries);
   return {
     geometries,
