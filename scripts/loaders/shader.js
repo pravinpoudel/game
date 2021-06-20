@@ -49,6 +49,11 @@ uniform vec3 u_lightDirection;
 uniform vec3 ambient;
 uniform vec3 diffuse;
 uniform vec3 specular;
+
+uniform sampler2D diffuseSampler;
+uniform sampler2D normalSampler;
+uniform sampler2D specularSampler;
+
 uniform vec3 emmisive;
 uniform float shininess;
 uniform float opacity;
@@ -65,10 +70,12 @@ void main(){
 
     vec3 directionalLight = vec3(0.8, 0.8, 0.8);    
     float lambertianFactor = clamp(dot(normalDirection, lightDirectionNormalized), 0.0, 1.0);
+    // vec3 diffuseTextureData = texture2D(diffuseSampler, v_textCord);
     vec3 effectiveDiffuse = v_color*diffuse*lambertianFactor*directionalLight;
 
     vec3 halfVector = normalize(lightDirectionNormalized + viewDirection);
     float specularLight = clamp(dot(halfVector, normalDirection), 0.0, 1.0);
+    // vec3 specularTextureData = texture2D(specularSampler, v_textCord);
     vec3 effectiveSpecular = specular*pow(specularLight, shininess);
 
     outColor = vec4( emmisive + ambientLight + effectiveDiffuse + effectiveSpecular, 1.0); 
