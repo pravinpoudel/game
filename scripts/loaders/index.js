@@ -11,11 +11,14 @@
 
   let positionLocation = gl.getAttribLocation(program, "a_position");
   let vertexColorLocation = gl.getAttribLocation(program, "a_color");
+  let normalLocation = gl.getAttribLocation(program, "a_normal");
+  let tangentLocation = gl.getAttribLocation(program, "a_tangent");
+  let biTangentLocation = gl.getAttribLocation(program, "a_bitangent");
+
+
   let modelMatrixLocation = gl.getUniformLocation(program, "u_modelMatrix");
   let viewProjectionLocation = gl.getUniformLocation(program, "u_vpMatrix");
   let scaleLocation = gl.getUniformLocation(program, "u_scale");
-
-  let normalLocation = gl.getAttribLocation(program, "a_normal");
   let normalMatrixLocation = gl.getUniformLocation(program, "u_worldNormal");
   let cameraLocation = gl.getUniformLocation(program, "u_cameraWorld");
   let lightLocation = gl.getUniformLocation(program, "u_lightDirection");
@@ -30,7 +33,7 @@
   // find the range and extend of an object to calculate the offset to properly view the object
 
   let { geometries, materials, minMax } = await objFileLoader(gl);
-  console.log(materials);
+  console.log(geometries);
   let { min: minValue, max: maxValue } = minMax;
   const range = m4.subtractVectors(maxValue, minValue);
   const maxSideLength = m4.length(range);
@@ -81,9 +84,20 @@
       new Float32Array(textureCord),
       gl.STATIC_DRAW
     );
-    if (index === 6) {
-      console.log(geometry.material);
-    }
+
+    let tangentVector = geometry.tangents;
+    let tangentBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tangentBuffer);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(tangentVector),
+      gl.STATIC_DRAW
+    )
+
+    let biTangent = geometry.biTangent;
+    let biTangentBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, biTangentBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(biTangent), gl.STATIC_DRAW);
 
     let material = geometry.material;
     return {
@@ -91,6 +105,8 @@
       colorBuffer,
       normalBuffer,
       textureBuffer,
+      tangentBuffer,
+      biTangentBuffer,
       length: localPosition.length,
       material: materials[material],
     };
@@ -144,6 +160,8 @@
           colorBuffer,
           normalBuffer,
           textureBuffer,
+          tangentBuffer,
+          biTangentBuffer,
           material,
           length,
         },
@@ -170,6 +188,15 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
         gl.enableVertexAttribArray(vertexColorLocation);
         gl.vertexAttribPointer(vertexColorLocation, 3, gl.FLOAT, false, 0, 0);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, tangentBuffer);
+        gl.enableVertexAttribArray(tangentLocation);
+        gl.vertexAttribPointer(tangentLocation,3, gl.FLOAT, false, 0, 0)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, biTangentBuffer);
+        gl.enableVertexAttribArray(biTangentLocation);
+        gl.vertexAttribPointer(biTangentLocation, 3, gl.FLOAT, false, 0, 0 )
+        
         gl.uniform3fv(ambientLocation, ambient);
         gl.uniform3fv(diffuseLocation, diffuse);
         // gl.uniform3fv(ambientLocation, opticalDensity);
