@@ -3,8 +3,9 @@ let geometries = [];
 
 async function objFileLoader(gl) {
   async function objLoader() {
-    let tempUrl = "/game/resources/models/objs/Chair/Chair.obj";
-    tempUrl = "https://webglfundamentals.org/webgl/resources/models/windmill/windmill.obj";
+    let tempUrl = "/game/resources/models/objs/king/model.obj";
+    // tempUrl =
+    //   "https://webglfundamentals.org/webgl/resources/models/windmill/windmill.obj";
     const response = await fetch(tempUrl);
     const text = await response.text();
     const lines = text.split("\n");
@@ -30,8 +31,8 @@ async function objFileLoader(gl) {
       vertexColor,
     ];
 
-    function toNumber(a){
-      return a.map((value)=>Number(value));
+    function toNumber(a) {
+      return a.map((value) => Number(value));
     }
 
     function addVertex(data) {
@@ -76,7 +77,7 @@ async function objFileLoader(gl) {
             normalCord,
             colorValue,
           },
-        }
+        };
 
         geometries.push(geometry);
       }
@@ -204,18 +205,18 @@ async function objFileLoader(gl) {
       illum(data) {
         material.illum = Number(...data);
       },
-      map_Kd(data){
+      map_Kd(data) {
         material.diffuseMap = data[0];
       },
-      map_Bump(data){
+      map_Bump(data) {
         material.normalMap = data[0];
       },
-      map_Normal(data){
+      map_Normal(data) {
         material.normalMap = data[0];
       },
-      map_Ns(data){
+      map_Ns(data) {
         material.specularMap = data[0];
-      }
+      },
     };
 
     function createDefaultTexture() {
@@ -235,13 +236,13 @@ async function objFileLoader(gl) {
       return texture;
     }
 
-    function checkPowerOf2(value){
-      if(value == 0){
+    function checkPowerOf2(value) {
+      if (value == 0) {
         return false;
       }
       let ceil = Math.ceil(Math.log2(value));
       let floor = Math.floor(Math.log2(value));
-      return ceil===floor?true:false;
+      return ceil === floor ? true : false;
     }
 
     function loadImage(url, texture) {
@@ -263,16 +264,12 @@ async function objFileLoader(gl) {
         if (checkPowerOf2(image.width) && checkPowerOf2(image.height)) {
           gl.generateMipmap(gl.TEXTURE_2D);
         }
-
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
       };
-
       return texture;
     }
-
-  
 
     function textureLoader() {
       const textureList = {};
@@ -286,28 +283,33 @@ async function objFileLoader(gl) {
             }
           })
           .map(([textureName, textureImage]) => {
-            console.log(textureImage)
-            // find name of image from textureImage
-            // you dont need to find the name because same name texture may be in different folder
-            let texturemapped = materialLists[textureImage];
-           
+            console.log(textureName, textureImage);
+            let texturemapped = textureList[textureImage];
             if (!texturemapped) {
               // find URL of image
               let imageURL = new URL(textureImage, url).href;
               texturemapped = loadImage(imageURL, texture);
+              texture[textureImage] = texturemapped;
             }
             material[textureName] = texturemapped;
           });
-            material = Object.assign({diffuseMap:createDefaultTexture(), specularMap: createDefaultTexture()}, material);
-            console.log(material)
+        material = Object.assign(
+          {
+            diffuseMap: createDefaultTexture(),
+            specularMap: createDefaultTexture(),
+            normalMap: createDefaultTexture(),
+          },
+          material
+        );
+        console.log(material.diffuseMap);
       });
-
-
     }
 
-    let url = new URL("https://webglfundamentals.org/webgl/resources/models/windmill/windmill.obj", window.location.href);
+    let url = new URL(
+      "/game/resources/models/objs/king/model.obj",
+      window.location.href
+    );
     let materialURL = new URL(matLib, url).href;
-    console.log(materialURL)
     const response = await (await fetch(materialURL)).text();
     const lines = response.split("\n");
     const regexKeyword = /(\w*)(?: )*(.*)/;
@@ -335,56 +337,60 @@ async function objFileLoader(gl) {
     return materials;
   }
 
-  function subArray(a, b){
-    return a.map((value, index)=>(value-b[index]));
+  function subArray(a, b) {
+    return a.map((value, index) => value - b[index]);
   }
 
-  function mulArray(a, b){
-    return a.map((value, index)=>value*b);
+  function mulArray(a, b) {
+    return a.map((value, index) => value * b);
   }
 
-  function computeTangent(){
-   
-    for(let geometry of geometries){
-     const positions = geometry.attributes.position;
-     const texCoordinate = geometry.attributes.texCord;
-     const verticesCount = positions/3;
-     for(let i=0, len = positions.length; i<len; i+=3){
-       let v0 = positions.slice(i, i+3);
-       let v1 = positions.slice(i+3, i+6);
-       let v2 = positions.slice(i+6, i+9);
+  function computeTangent() {
+    for (let geometry of geometries) {
+      const positions = geometry.attributes.position;
+      const texCoordinate = geometry.attributes.texCord;
+      const verticesCount = positions / 3;
+      for (let i = 0, len = positions.length; i < len; i += 3) {
+        let v0 = positions.slice(i, i + 3);
+        let v1 = positions.slice(i + 3, i + 6);
+        let v2 = positions.slice(i + 6, i + 9);
 
-       let uv0 = texCoordinate.slice(i, i+2)
-       let uv1 = texCoordinate.slice(i+2, i+4);
-       let uv2 = texCoordinate.slice(i+4, i+6);
+        let uv0 = texCoordinate.slice(i, i + 2);
+        let uv1 = texCoordinate.slice(i + 2, i + 4);
+        let uv2 = texCoordinate.slice(i + 4, i + 6);
 
-      let E1 = subArray(v1, v0);
-      let E2 = subArray(v2, v0);
+        let E1 = subArray(v1, v0);
+        let E2 = subArray(v2, v0);
 
-      let delUV1 = subArray(uv1, uv0);
-      let delUV2 = subArray(uv2, uv0);
+        let delUV1 = subArray(uv1, uv0);
+        let delUV2 = subArray(uv2, uv0);
 
-      let ifactor = delUV1[0]*delUV2[1]- delUV1[1]*delUV2[0];
-      ifactor = 1/ifactor;
+        let ifactor = delUV1[0] * delUV2[1] - delUV1[1] * delUV2[0];
+        ifactor = 1 / ifactor;
 
-      let tangent = mulArray(subArray(mulArray(E1,delUV2[1]), mulArray(E2,delUV1[1])), ifactor);
-      let biTangent = mulArray(subArray(mulArray(E1,delUV2[1]), mulArray(E2,delUV1[1])), ifactor);
-      
-      geometry.tangents.push(...tangent);
-      geometry.tangents.push(...tangent);
-      geometry.tangents.push(...tangent);
+        let tangent = mulArray(
+          subArray(mulArray(E1, delUV2[1]), mulArray(E2, delUV1[1])),
+          ifactor
+        );
+        let biTangent = mulArray(
+          subArray(mulArray(E1, delUV2[1]), mulArray(E2, delUV1[1])),
+          ifactor
+        );
 
-      geometry.biTangent.push(...biTangent);
-      geometry.biTangent.push(...biTangent);
-      geometry.biTangent.push(...biTangent);
-     }
+        geometry.tangents.push(...tangent);
+        geometry.tangents.push(...tangent);
+        geometry.tangents.push(...tangent);
+
+        geometry.biTangent.push(...biTangent);
+        geometry.biTangent.push(...biTangent);
+        geometry.biTangent.push(...biTangent);
+      }
     }
   }
   await objLoader();
   materials = await materialLoader();
   computeTangent();
   // await textureLoader();
-
   let minMax = getRange(geometries);
   return {
     geometries,

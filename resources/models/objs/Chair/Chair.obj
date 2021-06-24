@@ -1,6 +1,6 @@
 # Blender v2.80 (sub 75) OBJ File: ''
 # www.blender.org
-mtllib chair.mtl
+mtllib Chair.mtl
 o Object_3_Mesh_0
 v -0.821491 0.401320 1.634537
 v -0.657571 0.471939 1.361359
